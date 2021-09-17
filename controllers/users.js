@@ -1,0 +1,95 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
+
+const { NODE_ENV, JWT_SECRET } = process.env;
+
+module.exports.getAllUsers = (req, res, next) => {
+  User.find({})
+    .then((users) => res.send({ data: users }))
+    .catch(next);
+};
+
+module.exports.getUserInfo = (req, res, next) => {
+  User.findById(req.user._id)
+    .orFail(() => {
+      // throw new NotFoundError("Нет пользователя по заданному id");
+      throw new Error("Нет пользователя по заданному id");
+    })
+    .then((user) => {
+      res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        // throw new BadRequestError("Переданы некорректные данные");
+        throw new Error("Переданы некорректные данные");
+      }
+      next(err);
+    })
+    .catch(next);
+};
+
+module.exports.getUserById = (req, res, next) => {
+  User.findById(req.params.userId)
+    .orFail(() => {
+      // throw new NotFoundError("Нет пользователя по заданному id");
+      throw new Error("Нет пользователя по заданному id");
+    })
+    .then((user) => {
+      res.send({ data: user });
+    })
+    .catch((err) => {
+      if (err.name === "CastError") {
+        // throw new BadRequestError("Переданы некорректные данные");
+        throw new Error("Переданы некорректные данные");
+      }
+      next(err);
+    })
+    .catch(next);
+};
+
+module.exports.createUser = (req, res, next) => {
+  // eslint-disable-next-line object-curly-newline
+  const { name, email, password } = req.body;
+
+  bcrypt
+    .hash(password, 10)
+    .then((hash) => User.create({
+      name, email, password: hash,
+    }))
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === "ValidationError") {
+        // throw new BadRequestError("Переданы некорректные данные");
+        throw new Error("Переданы некорректные данные");
+      } else if (err.name === "MongoError" && err.code === 11000) {
+        // throw new RegConflictError("Пользователь с таким email существует");
+        throw new Error("Пользователь с таким email существует");
+      }
+    })
+    .catch(next);
+};
+
+module.exports.login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, NODE_ENV === "production" ? JWT_SECRET : "secret-key", {
+        expiresIn: "7d",
+      });
+
+      res.cookie("jwt", token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: true,
+        sameSite: "none",
+        secure: true,
+      });
+      res.send({ token });
+    })
+    .catch(() => {
+      // throw new UnauthorizedError("Не правильные почта или пароль");
+      throw new Error("Не правильные почта или пароль");
+    })
+    .catch(next);
+};
