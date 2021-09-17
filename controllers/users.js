@@ -48,6 +48,35 @@ module.exports.getUserById = (req, res, next) => {
     .catch(next);
 };
 
+module.exports.patchUser = (req, res, next) => {
+  const { name, email } = req.body;
+
+  User.findByIdAndUpdate(
+    req.user._id,
+    { name, email },
+    {
+      new: true,
+      runValidators: true,
+      // eslint-disable-next-line comma-dangle
+    }
+  )
+    .orFail(() => {
+      throw new Error("Нет пользователя по заданному id");
+      // throw new NotFoundError("Нет пользователя по заданному id");
+    })
+    .then((user) => res.send({ data: user }))
+    .catch((err) => {
+      if (err.name === "CastError") {
+        // throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
+        throw new Error("Переданы некорректные данные при обновлении профиля");
+      } else if (err.name === "ValidationError") {
+        // throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
+        throw new Error("Переданы некорректные данные при обновлении профиля");
+      }
+    })
+    .catch(next);
+};
+
 module.exports.createUser = (req, res, next) => {
   // eslint-disable-next-line object-curly-newline
   const { name, email, password } = req.body;
