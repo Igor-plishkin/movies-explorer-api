@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
+    required: true,
     minlength: 2,
     maxlength: 30,
     default: "Игорь",
@@ -28,6 +29,7 @@ const userSchema = new mongoose.Schema({
   },
 });
 
+// eslint-disable-next-line func-names
 userSchema.statics.findUserByCredentials = function (email, password) {
   return this.findOne({ email })
     .select("+password")
