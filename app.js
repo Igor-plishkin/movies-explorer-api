@@ -12,6 +12,8 @@ mongoose.connect("mongodb://localhost:27017/moviesdb", {
   useUnifiedTopology: true,
 });
 
+app.use("/", require("./routes/routes"));
+
 app.listen(PORT, () => {
   console.log("start server");
 });
