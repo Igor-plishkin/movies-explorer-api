@@ -29,24 +29,24 @@ module.exports.getUserInfo = (req, res, next) => {
     .catch(next);
 };
 
-module.exports.getUserById = (req, res, next) => {
-  User.findById(req.params.userId)
-    .orFail(() => {
-      // throw new NotFoundError("Нет пользователя по заданному id");
-      throw new Error("Нет пользователя по заданному id");
-    })
-    .then((user) => {
-      res.send({ data: user });
-    })
-    .catch((err) => {
-      if (err.name === "CastError") {
-        // throw new BadRequestError("Переданы некорректные данные");
-        throw new Error("Переданы некорректные данные");
-      }
-      next(err);
-    })
-    .catch(next);
-};
+// module.exports.getUserById = (req, res, next) => {
+//   User.findById(req.params.userId)
+//     .orFail(() => {
+//       // throw new NotFoundError("Нет пользователя по заданному id");
+//       throw new Error("Нет пользователя по заданному id");
+//     })
+//     .then((user) => {
+//       res.send({ data: user });
+//     })
+//     .catch((err) => {
+//       if (err.name === "CastError") {
+//         // throw new BadRequestError("Переданы некорректные данные");
+//         throw new Error("Переданы некорректные данные");
+//       }
+//       next(err);
+//     })
+//     .catch(next);
+// };
 
 module.exports.patchUser = (req, res, next) => {
   const { name, email } = req.body;
