@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const { errors } = require("celebrate");
 const router = require("./routes/routes");
 const errorsHandler = require("./middlewares/errorsHandler");
+const limiter = require("./middlewares/rateLimit");
 
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
@@ -27,6 +28,7 @@ require("dotenv").config();
 
 app.use(cookieParser());
 app.use(requestLogger);
+app.use(limiter);
 app.use(helmet());
 app.use(router);
 app.use(errorLogger);
