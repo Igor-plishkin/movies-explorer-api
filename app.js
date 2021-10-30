@@ -7,6 +7,7 @@ const { errors } = require("celebrate");
 const router = require("./routes/routes");
 const errorsHandler = require("./middlewares/errorsHandler");
 const limiter = require("./middlewares/rateLimit");
+const { MONGO_URL } = require("./utils/constans");
 
 const { requestLogger, errorLogger } = require("./middlewares/logger");
 
@@ -17,7 +18,7 @@ const app = express();
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-mongoose.connect("mongodb://localhost:27017/moviesdb", {
+mongoose.connect(MONGO_URL, {
   useNewUrlParser: true,
   useCreateIndex: true,
   useFindAndModify: false,
