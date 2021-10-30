@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
     required: true,
     minlength: 8,
     select: false,
+    validate: {
+      validator(pass) {
+        return validator.isStrongPassword(pass);
+      },
+      message: "Недостаточно сложный пароль",
+    },
   },
 });
 
