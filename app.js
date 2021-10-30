@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
 const {
@@ -10,6 +11,8 @@ const {
 
 const { login, createUser } = require("./controllers/users");
 const auth = require("./middlewares/auth");
+const { requestLogger, errorLogger } = require("./middlewares/logger");
+const NotFoundError = require("./errors/not-found-err");
 
 const { PORT = 3000 } = process.env;
 
@@ -25,7 +28,11 @@ mongoose.connect("mongodb://localhost:27017/moviesdb", {
   useUnifiedTopology: true,
 });
 
+require("dotenv").config();
+
 app.use(cookieParser());
+app.use(requestLogger);
+app.use(helmet());
 
 app.post("/signin", celebrate({
   body: Joi.object().keys({
@@ -42,6 +49,12 @@ app.post("/signup", celebrate({
 }), createUser);
 app.use(auth);
 app.use("/", require("./routes/routes"));
+
+app.use("*", () => {
+  throw new NotFoundError("Страница не найдена");
+});
+
+app.use(errorLogger);
 
 app.use(errors());
 
