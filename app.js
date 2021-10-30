@@ -3,16 +3,10 @@ const mongoose = require("mongoose");
 const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const bodyParser = require("body-parser");
-const {
-  celebrate,
-  Joi,
-  errors,
-} = require("celebrate");
+const { errors } = require("celebrate");
+const router = require("./routes/routes");
 
-const { login, createUser } = require("./controllers/users");
-const auth = require("./middlewares/auth");
 const { requestLogger, errorLogger } = require("./middlewares/logger");
-const NotFoundError = require("./errors/not-found-err");
 
 const { PORT = 3000 } = process.env;
 
@@ -33,27 +27,7 @@ require("dotenv").config();
 app.use(cookieParser());
 app.use(requestLogger);
 app.use(helmet());
-
-app.post("/signin", celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-  }),
-}), login);
-app.post("/signup", celebrate({
-  body: Joi.object().keys({
-    email: Joi.string().required().email(),
-    password: Joi.string().required().min(8),
-    name: Joi.string().min(2).max(30),
-  }),
-}), createUser);
-app.use(auth);
-app.use("/", require("./routes/routes"));
-
-app.use("*", () => {
-  throw new NotFoundError("Страница не найдена");
-});
-
+app.use(router);
 app.use(errorLogger);
 
 app.use(errors());
