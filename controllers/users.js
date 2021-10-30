@@ -1,6 +1,10 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/user");
+const BadRequestError = require("../errors/bad-request-err");
+const NotFoundError = require("../errors/not-found-err");
+const RegConflictError = require("../errors/reg-conflict");
+const UnauthorizedError = require("../errors/unauthorized-err");
 
 const { NODE_ENV, JWT_SECRET } = process.env;
 
@@ -13,16 +17,14 @@ module.exports.getAllUsers = (req, res, next) => {
 module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
-      // throw new NotFoundError("Нет пользователя по заданному id");
-      throw new Error("Нет пользователя по заданному id");
+      throw new NotFoundError("Нет пользователя по заданному id");
     })
     .then((user) => {
       res.send({ data: user });
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        // throw new BadRequestError("Переданы некорректные данные");
-        throw new Error("Переданы некорректные данные");
+        throw new BadRequestError("Переданы некорректные данные");
       }
       next(err);
     })
@@ -57,28 +59,23 @@ module.exports.patchUser = (req, res, next) => {
     {
       new: true,
       runValidators: true,
-      // eslint-disable-next-line comma-dangle
-    }
+    },
   )
     .orFail(() => {
-      throw new Error("Нет пользователя по заданному id");
-      // throw new NotFoundError("Нет пользователя по заданному id");
+      throw new NotFoundError("Нет пользователя по заданному id");
     })
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "CastError") {
-        // throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
-        throw new Error("Переданы некорректные данные при обновлении профиля");
+        throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
       } else if (err.name === "ValidationError") {
-        // throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
-        throw new Error("Переданы некорректные данные при обновлении профиля");
+        throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
       }
     })
     .catch(next);
 };
 
 module.exports.createUser = (req, res, next) => {
-  // eslint-disable-next-line object-curly-newline
   const { name, email, password } = req.body;
 
   bcrypt
@@ -89,11 +86,9 @@ module.exports.createUser = (req, res, next) => {
     .then((user) => res.send({ data: user }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        // throw new BadRequestError("Переданы некорректные данные");
-        throw new Error("Переданы некорректные данные");
+        throw new BadRequestError("Переданы некорректные данные");
       } else if (err.name === "MongoError" && err.code === 11000) {
-        // throw new RegConflictError("Пользователь с таким email существует");
-        throw new Error("Пользователь с таким email существует");
+        throw new RegConflictError("Пользователь с таким email существует");
       }
     })
     .catch(next);
@@ -117,8 +112,7 @@ module.exports.login = (req, res, next) => {
       res.send({ token });
     })
     .catch(() => {
-      // throw new UnauthorizedError("Не правильные почта или пароль");
-      throw new Error("Не правильные почта или пароль");
+      throw new UnauthorizedError("Не правильные почта или пароль");
     })
     .catch(next);
 };

@@ -1,4 +1,7 @@
 const Movie = require("../models/movie");
+const BadRequestError = require("../errors/bad-request-err");
+const NotFoundError = require("../errors/not-found-err");
+const PermissionError = require("../errors/permission-err");
 
 module.exports.getSavedMovies = (req, res, next) => {
   Movie.find({})
@@ -12,21 +15,18 @@ module.exports.deleteMovie = (req, res, next) => {
   Movie.findById(movieId)
     .then((movie) => {
       if (!movie) {
-        // throw new NotFoundError("Карточка с указанным _id не найдена.");
-        throw new Error("Карточка с указанным _id не найдена.");
+        throw new NotFoundError("Фильм с указанным _id не найден.");
       } else if (JSON.stringify(req.user._id) === JSON.stringify(movie.owner)) {
         Movie.findByIdAndRemove(movieId).then((delMovie) => {
           res.send({ data: delMovie });
         });
       } else {
-        // throw new PermissionError("Нельзя удалять чужие карточки");
-        throw new Error("Нельзя удалять чужие карточки");
+        throw new PermissionError("Нельзя удалять чужие фильмы");
       }
     })
     .catch((err) => {
       if (err.name === "CastError") {
-        // throw new BadRequestError("Переданы некорректные данные при удалении карточки");
-        throw new Error("Переданы некорректные данные при удалении карточки");
+        throw new BadRequestError("Переданы некорректные данные при удалении фильма");
       }
       next(err);
     })
@@ -64,8 +64,7 @@ module.exports.createMovie = (req, res, next) => {
     .then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        // throw new BadRequestError("Переданы некорректные данные при создании карточки");
-        throw new Error("Переданы некорректные данные при создании карточки");
+        throw new BadRequestError("Переданы некорректные данные при добавлении фильма");
       }
       next(err);
     })
