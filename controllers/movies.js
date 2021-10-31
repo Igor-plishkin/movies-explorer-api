@@ -4,7 +4,8 @@ const NotFoundError = require("../errors/not-found-err");
 const PermissionError = require("../errors/permission-err");
 
 module.exports.getSavedMovies = (req, res, next) => {
-  Movie.find({})
+  const owner = req.user._id;
+  Movie.find({ owner })
     .then((movies) => res.send({ data: movies }))
     .catch(next);
 };
@@ -38,6 +39,7 @@ module.exports.createMovie = (req, res, next) => {
     country,
     director,
     duration,
+    description,
     year,
     image,
     trailer,
@@ -52,6 +54,7 @@ module.exports.createMovie = (req, res, next) => {
     country,
     director,
     duration,
+    description,
     year,
     image,
     trailer,
@@ -64,7 +67,7 @@ module.exports.createMovie = (req, res, next) => {
     .then((movie) => res.send({ data: movie }))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        throw new BadRequestError("Переданы некорректные данные при добавлении фильма");
+        throw new BadRequestError(err.message);
       }
       next(err);
     })

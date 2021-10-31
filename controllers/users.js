@@ -7,12 +7,6 @@ const RegConflictError = require("../errors/reg-conflict");
 const UnauthorizedError = require("../errors/unauthorized-err");
 const { JWT_SECRET } = require("../utils/constans");
 
-module.exports.getAllUsers = (req, res, next) => {
-  User.find({})
-    .then((users) => res.send({ data: users }))
-    .catch(next);
-};
-
 module.exports.getUserInfo = (req, res, next) => {
   User.findById(req.user._id)
     .orFail(() => {
@@ -29,25 +23,6 @@ module.exports.getUserInfo = (req, res, next) => {
     })
     .catch(next);
 };
-
-// module.exports.getUserById = (req, res, next) => {
-//   User.findById(req.params.userId)
-//     .orFail(() => {
-//       // throw new NotFoundError("Нет пользователя по заданному id");
-//       throw new Error("Нет пользователя по заданному id");
-//     })
-//     .then((user) => {
-//       res.send({ data: user });
-//     })
-//     .catch((err) => {
-//       if (err.name === "CastError") {
-//         // throw new BadRequestError("Переданы некорректные данные");
-//         throw new Error("Переданы некорректные данные");
-//       }
-//       next(err);
-//     })
-//     .catch(next);
-// };
 
 module.exports.patchUser = (req, res, next) => {
   const { name, email } = req.body;
@@ -70,6 +45,7 @@ module.exports.patchUser = (req, res, next) => {
       } else if (err.name === "ValidationError") {
         throw new BadRequestError("Переданы некорректные данные при обновлении профиля");
       }
+      next(err);
     })
     .catch(next);
 };
@@ -89,6 +65,7 @@ module.exports.createUser = (req, res, next) => {
       } else if (err.name === "MongoError" && err.code === 11000) {
         throw new RegConflictError("Пользователь с таким email существует");
       }
+      next(err);
     })
     .catch(next);
 };
